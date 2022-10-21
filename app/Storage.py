@@ -16,7 +16,7 @@ class Storage(OrionObject):
         id (str): Orion id
         capacity (int): capacity
         counter (int): the current number of items in the Storage
-        batch_size (int): the change in the counter when a batch of items 
+        step_size (int): the change in the counter when a group of items 
             is put in or is taken away
         type: "emptying" or "filling"
             If a storage is normally full and items are taken from it
@@ -28,23 +28,23 @@ class Storage(OrionObject):
 
     Usage:
         __init__:
-            storage = Storage(id, capacity, batch_size, type)
+            storage = Storage(id, capacity, step_size, type)
                 example:
                     coverMagnetStorage = Storage("urn:ngsi_ld:Storage:CoverMagnetStorage1", 288, -8, "emptying")
                         A Storage of 288, -8 items per batch, needs to be filled when empty.
 
         step(): 
-            updates the storage's counter by adding to it the batch_size
+            updates the storage's counter by adding to it the step_size
             also updates the counter in Orion
 
         reset():
             resets the storage's counter, also updates it in Orion
 
     """
-    def __init__(self, id: str, capacity: int, batch_size: int, type: str):
+    def __init__(self, id: str, capacity: int, step_size: int, type: str):
         super().__init__(id)
         self.capacity = capacity
-        self.batch_size= batch_size
+        self.step_size = step_size
         self.type = type
         if self.type == "emptying":
             self.counter = self.capacity
@@ -57,7 +57,7 @@ class Storage(OrionObject):
         self.update_attribute(attr_name="Counter", attr_value=self.counter)
 
     def step(self):
-        self.counter += self.batch_size
+        self.counter += self.step_size
         self.update_counter()
 
     def reset(self):

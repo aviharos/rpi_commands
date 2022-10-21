@@ -17,10 +17,16 @@ class EventHandler():
         self.events = events
         self.objects = objects
 
-    def handle_event(self, event_id: int):
+    def handle_event(self, event_id: int, *args):
+        if event_id not in self.events:
+            raise ValueError(f"Event not specified in events.json: {event_id}")
         self.event = self.events[event_id]
+        if "object_id" not in self.event:
+            raise ValueError(f'Missing key: "object_id" in event: {self.event}')
         self.object_id = self.event["object_id"]
-        self.object = self.objects[self.object_id]
+        if self.object_id not in self.objects:
+            raise ValueError(f"Object not specified in a json file: {self.object_id}")
+        self.object = self.objects[self.object_id]["py"]
         if isinstance(self.object, Storage):
             self.handle_storage()
         elif isinstance(self.object, Workstation):
