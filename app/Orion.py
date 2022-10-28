@@ -172,8 +172,11 @@ def update_attribute(id: str, attr_name: str, value):
         RuntimeError:
             if the response's status code is not 204
     """
+    logger_Orion.debug(f"id: {id}, attr_name: {attr_name}, value: {value}")
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities/{id}/attrs/{attr_name}/value"
-    response = requests.put(url, data=str(value))
+    logger_Orion.debug(url)
+    logger_Orion.debug(f"data: {str(value)}")
+    response = requests.put(url, headers={"Content-Type": "text/plain"}, data=str(value))
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update the attribute {attr_name} of {id} with {value} in Orion.\nStatus_code: {response.status_code}"

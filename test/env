@@ -1,2 +1,4 @@
-MOMAMS_HOST=localhost
-IOTAGENT_HTTP_PORT=4315
+export IOTAGENT_HTTP_PORT=4315
+export MOMAMS_HOST=localhost
+export ORION_HOST=localhost
+export ORION_PORT=1026
