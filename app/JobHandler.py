@@ -8,26 +8,24 @@ import os
 import requests
 
 # Custom imports
-
-
-MOMAMS_HOST = os.environ.get("MOMAMS_HOST")
-if MOMAMS_HOST is None:
-    raise ValueError("MOMAMS_HOST environment variable is not set")
-IOTAGENT_HTTP_PORT = os.environ.get("IOTAGENT_HTTP_PORT")
-if IOTAGENT_HTTP_PORT is None:
-    raise ValueError("IOTAGENT_HTTP_PORT environment variable is not set")
+from post_to_IoT_agent import post_to_IoT_agent
 
 
 class JobHandler:
     """JobHandler
 
-    It is a group object because it does not belong to a specific Job.
+    It is an extraodinary object because we do not know which Job the JobHandler 
+    refers to.
     The Raspberry Pi does not know which Job is currently active on the Workstation.
     The Raspberry Pi only knows when a new job is started and how many
     cycles have been completed so far in the current job.
     Whenever good or reject parts are completed (a batch is considered uniform in this regard),
     the Raspberry Pi sends data to the IoT agent of MOMAMS
     informing it that a batch of good or reject parts is completed.
+
+    The JobHandler is not present directly in the CommandHandler's
+    objects dict. It always exists as an attribute of one of the Workstation 
+    objects. Whenever
 
     Attributes:
         workstation_id (str): Orion id of the Job's workstation
@@ -47,18 +45,10 @@ class JobHandler:
             handles the event of reject parts completed
             in a Workstation cycle 
             also sends the data to the IoT agent
-
-        reset():
-            reset the counters because of a new job
-
     """
 
     def __init__(self, workstation_id: str):
         self.workstation_id = workstation_id
-        self.good_cycle_count = 0
-        self.reject_cycle_count = 0
-
-    def reset(self):
         self.good_cycle_count = 0
         self.reject_cycle_count = 0
 
@@ -70,9 +60,7 @@ class JobHandler:
             "data": {},
             "transform": {"ws": "urn:ngsi_ld:Workstation:1", "ct": type, "cc": counter}
         }
-        res = requests.post(url=f"http://{MOMAMS_HOST}:{IOTAGENT_HTTP_PORT}", json=req)
-        if res.status_code != 204:
-            raise RuntimeError(f"Sending request to the IoT agent failed. Response:{res}")
+        post_to_IoT_agent(req)
 
     def handle_good_cycle(self):
         self.good_cycle_count += 1

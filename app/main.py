@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The main program 
 
-This program loops and processes events
+This program loops and processes commands
 by sending pre-configured data packet to the Orion broker.
 """
 
@@ -16,11 +16,10 @@ import serial
 
 # custom imports
 from Logger import getLogger
-from EventHandler import EventHandler
+from CommandHandler import CommandHandler
 from Storage import Storage
 from Job import JobHandler
 from Workstation import Workstation
-from decode_message import decode_message
 
 logger = getLogger(__name__)
 
@@ -34,8 +33,8 @@ def read_json(file: str):
     except json.decoder.JSONDecodeError as error:
         raise ValueError(f"Error: invalid file specification: {file}") from error
 
-def read_all_events():
-    file = os.path.join("..", "events.json")
+def read_all_commands():
+    file = os.path.join("..", "commands.json")
     return read_json(file)
 
 def init_objects():
@@ -58,17 +57,17 @@ def init_objects():
 def main():
     if len(sys.argv) != 2:
         print("Error: no device specified. Correct usage:")
-        print("./main.py /dev/ttyACM0")
-        print("Replace /dev/ttyACM0 with the Arduino board that will send the event numbers")
+        print("./main.py /dev/ttyUSB0")
+        print("Replace /dev/ttyUSB0 with the Arduino board that will send the event numbers")
         sys.exit(1)
 
-    events = read_all_events()
-    logger.info("Successfully read events")
-    logger.debug(f"Events:\n{events}")
+    commands = read_all_commands()
+    logger.info("Successfully read commands")
+    logger.debug(f"commands:\n{commands}")
     objects = init_objects()
     logger.info("Successfully read objects")
     logger.debug(f"Objects:\n{objects}")
-    eventHandler = EventHandler(events, objects)
+    commandHandler = CommandHandler(commands, objects)
 
     dev = sys.argv[1]
     ser = serial.Serial(dev, 9600, timeout=1)
@@ -79,9 +78,11 @@ def main():
         while True:
             if ser.in_waiting > 0:
                 line = ser.readline().decode("utf-8").rstrip()
-                logger.info(f"Serial: incoming data: {line}")
-                event_id, *args = decode_message(line)
-                eventHandler.handle_event(event_id, *args)
+                logger.debug(f"Serial: incoming data: {line}")
+                decoded_commands = json.loads(line)
+                logger.debug(f"Decoded commands: {decoded_commands}")
+                for event_id, arg in decoded_commands.items():
+                    commandHandler.handle_command(event_id, arg)
     except KeyboardInterrupt:
         logger.info("Exiting...")
 

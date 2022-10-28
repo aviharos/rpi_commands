@@ -7,6 +7,7 @@ Made from the abstract class OrionObject
 
 # Custom imports
 from OrionObject import OrionObject
+from JobHandler import JobHandler
 
 
 class Workstation(OrionObject):
@@ -30,6 +31,11 @@ class Workstation(OrionObject):
     def __init__(self, id: str):
         super().__init__(id)
         self.available = False  # off by default
+        self.reset_jobHandler()
+
+    def reset_jobHandler(self):
+        # getting a brand new JobHandler ensures that the JobHandler's counters are 0
+        self.jobHandler = JobHandler(self.id)
 
     def update_available(self):
         self.update_attribute(attr_name="Available", attr_value=self.available)
@@ -41,4 +47,10 @@ class Workstation(OrionObject):
     def turn_off(self):
         self.available = False
         self.update_available()
+
+    def handle_good_cycle(self):
+        self.jobHandler.handle_good_cycle()
+
+    def handle_reject_cycle(self):
+        self.jobHandler.handle_reject_cycle()
 
