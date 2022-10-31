@@ -58,7 +58,7 @@ class JobHandler:
             "method": "PUT",
             "headers": ["Content-Type: application/json"],
             "data": {},
-            "transform": {"ws": "urn:ngsi_ld:Workstation:1", "ct": type, "cc": counter}
+            "transform": {"ws": self.workstation_id, "ct": type, "cc": counter}
         }
         post_to_IoT_agent(req)
 
@@ -68,6 +68,6 @@ class JobHandler:
 
     def handle_reject_cycle(self):
         self.reject_cycle_count += 1
-        self.send_request_to_iot_agent(type="good", counter=self.reject_cycle_count)
+        self.send_request_to_iot_agent(type="reject", counter=self.reject_cycle_count)
 
 

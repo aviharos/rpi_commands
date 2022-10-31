@@ -140,7 +140,7 @@ def update(objects: list):
         TypeError: if the objects does not contain an iterable
         RuntimeError: if the POST request's status code is not 204
     """
-    logger_Orion.debug(f"update: objects: {objects}")
+    # logger_Orion.debug(f"update: objects: {objects}")
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/op/update"
     try:
         json_ = {"actionType": "append", "entities": list(objects)}
