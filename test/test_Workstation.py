@@ -39,22 +39,22 @@ class TestWorkstation(unittest.TestCase):
         obj_ = Orion.get("urn:ngsi_ld:Workstation:InjectionMoulding1")
         self.assertEqual(False, obj_["Available"]["value"])
 
-    # def test_reset_jobHandler(self):
-    #     self.workstation.jobHandler.good_cycle_count = 1
-    #     self.workstation.jobHandler.reject_cycle_count = 1
-    #     self.workstation.reset_jobHandler()
-    #     self.assertEqual(0, self.workstation.jobHandler.good_cycle_count)
-    #     self.assertEqual(0, self.workstation.jobHandler.reject_cycle_count)
-    #
-    # def test_handle_good_cycle(self):
-    #     self.workstation.handle_good_cycle()
-    #     job = Orion.get("urn:ngsi_ld:Job:202200045")
-    #     self.assertEqual(8, job["GoodPartCounter"]["value"])
-    #
-    # def test_handle_reject_cycle(self):
-    #     self.workstation.handle_reject_cycle()
-    #     job = Orion.get("urn:ngsi_ld:Job:202200045")
-    #     self.assertEqual(8, job["RejectPartCounter"]["value"])
+    def test_reset_jobHandler(self):
+        self.workstation.jobHandler.good_cycle_count = 1
+        self.workstation.jobHandler.reject_cycle_count = 1
+        self.workstation.reset_jobHandler()
+        self.assertEqual(0, self.workstation.jobHandler.good_cycle_count)
+        self.assertEqual(0, self.workstation.jobHandler.reject_cycle_count)
+
+    def test_handle_good_cycle(self):
+        self.workstation.handle_good_cycle()
+        job = Orion.get("urn:ngsi_ld:Job:202200045")
+        self.assertEqual(8, job["GoodPartCounter"]["value"])
+
+    def test_handle_reject_cycle(self):
+        self.workstation.handle_reject_cycle()
+        job = Orion.get("urn:ngsi_ld:Job:202200045")
+        self.assertEqual(8, job["RejectPartCounter"]["value"])
 
 if __name__ == "__main__":
     unittest.main()
