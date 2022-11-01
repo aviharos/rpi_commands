@@ -52,7 +52,7 @@ class CommandHandler():
     def handle_special_command(self):
         req = self.command["request"]
         if self.arg is not None:
-            req["data"] = self.arg
+            req["data"] = str(self.arg)
         post_to_IoT_agent(req)
 
     def handle_non_special_command(self):
