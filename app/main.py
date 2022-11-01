@@ -72,6 +72,7 @@ def main():
         while True:
             if ser.in_waiting > 0:
                 line = ser.readline().decode("utf-8").rstrip()
+                ser.reset_input_buffer()
                 logger.debug(f"Serial: incoming data: {line}")
                 decoded_commands = json.loads(line)
                 logger.debug(f"Decoded commands: {decoded_commands}")
