@@ -85,6 +85,7 @@ class CommandHandler():
         elif self.command["type"] == "handle_reject_cycle":
             self.object.handle_reject_cycle()
         elif self.command["type"] == "reset":
-            self.object.reset()
+            self.object.reset_jobHandler()
+        else:
             raise NotImplementedError(f"command type {self.command['type']} not implemented for {self.object.id}")
 

@@ -18,20 +18,15 @@ import serial
 from Logger import getLogger
 from CommandHandler import CommandHandler
 from Storage import Storage
-from Job import JobHandler
+from JobHandler import JobHandler
 from Workstation import Workstation
 
 logger = getLogger(__name__)
 
 def read_json(file: str):
-    try:
-        with open(file, "r") as f:
-            object = json.load(f)
-        return object
-    except FileNotFoundError as error:
-        raise FileNotFoundError(f"Error: file not found: {file}") from error
-    except json.decoder.JSONDecodeError as error:
-        raise ValueError(f"Error: invalid file specification: {file}") from error
+    with open(file, "r") as f:
+        object = json.load(f)
+    return object
 
 def read_all_commands():
     file = os.path.join("..", "commands.json")
@@ -52,7 +47,6 @@ def init_objects():
         if object["type"] == "Job":
             objects[id]["py"] = JobHandler(object["RefWorkstation"]["value"])
     return objects
-
 
 def main():
     if len(sys.argv) != 2:

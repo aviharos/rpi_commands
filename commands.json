@@ -1,109 +1,120 @@
 {
     "2": {
-        "id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
+        "object_id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
         "type": "turn_off"
     },
     "3": {
-        "id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
+        "object_id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
         "type": "turn_on"
     },
     "4": {
-        "id": "urn:ngsi_ld:Workstation:Assembly1",
+        "object_id": "urn:ngsi_ld:Workstation:Assembly1",
         "type": "turn_off"
     },
     "5": {
-        "id": "urn:ngsi_ld:Workstation:Assembly1",
+        "object_id": "urn:ngsi_ld:Workstation:Assembly1",
         "type": "turn_on"
     },
     "8": {
-        "id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
+        "object_id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
         "type": "reset"
     },
     "9": {
-        "id": "urn:ngsi_ld:Workstation:Assembly1",
+        "object_id": "urn:ngsi_ld:Workstation:Assembly1",
         "type": "reset"
     },
     "10": {
-        "id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
+        "object_id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
         "type": "handle_good_cycle"
     },
     "11": {
-        "id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
+        "object_id": "urn:ngsi_ld:Workstation:InjectionMoulding1",
         "type": "handle_reject_cycle"
     },
     "12": {
-        "id": "urn:ngsi_ld:Workstation:Assembly1",
+        "object_id": "urn:ngsi_ld:Workstation:Assembly1",
         "type": "handle_good_cycle"
     },
     "13": {
-        "id": "urn:ngsi_ld:Workstation:Assembly1",
+        "object_id": "urn:ngsi_ld:Workstation:Assembly1",
         "type": "handle_reject_cycle"
     },
     "17": {
-        "id": "urn:ngsi_ld:Storage:RejectStorage1",
+        "object_id": "urn:ngsi_ld:Storage:RejectStorage1",
         "type": "step"
     },
     "18": {
-        "id": "urn:ngsi_ld:Storage:RejectStorage1",
+        "object_id": "urn:ngsi_ld:Storage:RejectStorage1",
         "type": "reset"
     },
     "19": {
-        "id": "urn:ngsi_ld:Storage:TrayLoaderStorage1",
+        "object_id": "urn:ngsi_ld:Storage:TrayLoaderStorage1",
         "type": "step"
     },
     "20": {
-        "id": "urn:ngsi_ld:Storage:TrayLoaderStorage1",
+        "object_id": "urn:ngsi_ld:Storage:TrayLoaderStorage1",
         "type": "reset"
     },
     "21": {
-        "id": "urn:ngsi_ld:Storage:TrayUnloaderStorage1",
+        "object_id": "urn:ngsi_ld:Storage:TrayUnloaderStorage1",
         "type": "step"
     },
     "22": {
-        "id": "urn:ngsi_ld:Storage:TrayUnloaderStorage1",
+        "object_id": "urn:ngsi_ld:Storage:TrayUnloaderStorage1",
         "type": "reset"
     },
     "23": {
-        "id": "urn:ngsi_ld:Storage:CoverMagnetStorage1",
+        "object_id": "urn:ngsi_ld:Storage:CoverMagnetStorage1",
         "type": "step"
     },
     "24": {
-        "id": "urn:ngsi_ld:Storage:CoverMagnetStorage1",
+        "object_id": "urn:ngsi_ld:Storage:CoverMagnetStorage1",
         "type": "reset"
     },
     "25": {
-        "id": "urn:ngsi_ld:Storage:CubeMagnetStorage1",
+        "object_id": "urn:ngsi_ld:Storage:CubeMagnetStorage1",
         "type": "step"
     },
     "26": {
-        "id": "urn:ngsi_ld:Storage:CubeMagnetStorage1",
+        "object_id": "urn:ngsi_ld:Storage:CubeMagnetStorage1",
         "type": "reset"
     },
     "27": {
-        "id": "urn:ngsi_ld:Storage:TrayLoaderStorage2",
+        "object_id": "urn:ngsi_ld:Storage:TrayLoaderStorage2",
         "type": "step"
     },
     "28": {
-        "id": "urn:ngsi_ld:Storage:TrayLoaderStorage2",
+        "object_id": "urn:ngsi_ld:Storage:TrayLoaderStorage2",
         "type": "reset"
     },
     "29": {
-        "id": "urn:ngsi_ld:Storage:TrayUnloaderStorage2",
+        "object_id": "urn:ngsi_ld:Storage:TrayUnloaderStorage2",
         "type": "step"
     },
     "30": {
-        "id": "urn:ngsi_ld:Storage:TrayUnloaderStorage2",
+        "object_id": "urn:ngsi_ld:Storage:TrayUnloaderStorage2",
         "type": "reset"
-    }
+    },
     "33": {
-        "agent": true,
+        "special": null,
         "request": {
             "url": "http://orion:1026/v2/entities/urn:ngsi_ld:Storage:TrayLoaderStorage1/attrs/Counter/value",
             "method": "PUT",
             "headers": [
                 "Content-Type: text/plain"
             ],
-            "data": "10"
+            "data": "3"
+        }
+    },
+    "34": {
+        "special": null,
+        "request": {
+            "url": "http://orion:1026/v2/entities/urn:ngsi_ld:Storage:TrayLoaderStorage1/attrs/Counter/value",
+            "method": "PUT",
+            "headers": [
+                "Content-Type: text/plain"
+            ],
+            "data": null
         }
     }
 }
