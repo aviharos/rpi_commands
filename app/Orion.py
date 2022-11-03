@@ -36,6 +36,13 @@ if ORION_PORT is None:
     )
     ORION_PORT = default_port
 
+TIMEOUT = os.environ.get("TIMEOUT")
+if TIMEOUT is None:
+    TIMEOUT = 5
+    logger_Orion.warning(f"TIMEOUT environtment variable is not set, using default value: {TIMEOUT}")
+else:
+    TIMEOUT = int(TIMEOUT)
+
 
 def getRequest(url: str):
     """Send a GET request to Orion
@@ -51,7 +58,7 @@ def getRequest(url: str):
         ValueError: if the json parsing fails
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=TIMEOUT)
         response.close()
     except Exception as error:
         raise RuntimeError(f"Get request failed to URL: {url}") from error
@@ -149,7 +156,7 @@ def update(objects: list):
         raise TypeError(
             f"The objects {objects} are not iterable, cannot make a list. Please, provide an iterable object"
         ) from error
-    response = requests.post(url, json=json_)
+    response = requests.post(url, json=json_, timeout=TIMEOUT)
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update objects in Orion.\nStatus_code: {response.status_code}\nObjects:\n{objects}"
@@ -176,7 +183,7 @@ def update_attribute(id: str, attr_name: str, value):
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities/{id}/attrs/{attr_name}/value"
     logger_Orion.debug(url)
     logger_Orion.debug(f"data: {str(value)}")
-    response = requests.put(url, headers={"Content-Type": "text/plain"}, data=str(value))
+    response = requests.put(url, headers={"Content-Type": "text/plain"}, data=str(value), timeout=TIMEOUT)
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update the attribute {attr_name} of {id} with {value} in Orion.\nStatus_code: {response.status_code}"

@@ -2,10 +2,8 @@
 """
 
 # Standard Library imports
-import os
 
 # PyPI imports
-import requests
 
 # Custom imports
 from post_to_IoT_agent import post_to_IoT_agent

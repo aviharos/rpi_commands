@@ -3,3 +3,4 @@ export LOG_TO_FILE=true
 export MOMAMS_HOST=localhost
 export ORION_HOST=localhost
 export ORION_PORT=1026
+export TIMEOUT=5
