@@ -48,6 +48,10 @@ def init_objects():
             objects[id]["py"] = JobHandler(object["RefWorkstation"]["value"])
     return objects
 
+def parse_concatenated_jsons(s:str):
+    comma_separated = s.replace("}{", "},{")
+    return json.loads(f"[{comma_separated}]")
+
 def main():
     if len(sys.argv) != 2:
         print("Error: no device specified. Correct usage:")
@@ -74,10 +78,23 @@ def main():
                 line = ser.readline().decode("utf-8").rstrip()
                 ser.reset_input_buffer()
                 logger.debug(f"Serial: incoming data: {line}")
-                decoded_commands = json.loads(line)
+                """This is necessary, because the Arduino might send
+                2 or more sets of commands while the previous ones as processed like
+                '{"1": None, "3": 0.45}{"1": None, "3": 0.45}' 
+                These are concatenated jsons"""
+                decoded_commands = parse_concatenated_jsons(line)
                 logger.debug(f"Decoded commands: {decoded_commands}")
-                for event_id, arg in decoded_commands.items():
-                    commandHandler.handle_command(event_id, arg)
+                for set_of_commands in decoded_commands:
+                    logger.debug(f"Processing set of commands: {set_of_commands}")
+                    """The Arduino sends commands in sets
+                    A set of commands consists of a dictionary
+                    For example: {"1": None, "3": 0.45} means that
+                    the Arduino sent 2 commands in a set:
+                        command "1" with arg: null,
+                        command "3" with arg: 0.45
+                    Now let's handle each command separately"""
+                    for command_id, arg in set_of_commands.items():
+                        commandHandler.handle_command(command_id, arg)
     except KeyboardInterrupt:
         logger.info("Exiting...")
 
