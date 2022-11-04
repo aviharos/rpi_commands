@@ -3,7 +3,7 @@ import sys
 import unittest
 from modules import reupload_jsons_to_Orion
 
-sys.path.insert(0, os.path.join("..", "app"))
+sys.path.insert(0, os.path.join("..", "src"))
 from Workstation import Workstation
 import Orion
 

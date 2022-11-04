@@ -4,7 +4,7 @@ import sys
 import unittest
 from modules import reupload_jsons_to_Orion
 
-sys.path.insert(0, os.path.join("..", "app"))
+sys.path.insert(0, os.path.join("..", "src"))
 from Storage import Storage
 from Workstation import Workstation
 from CommandHandler import CommandHandler
