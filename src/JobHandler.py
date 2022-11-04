@@ -4,6 +4,7 @@
 # Standard Library imports
 
 # PyPI imports
+import requests
 
 # Custom imports
 from post_to_IoT_agent import post_to_IoT_agent
@@ -45,7 +46,8 @@ class JobHandler:
             also sends the data to the IoT agent
     """
 
-    def __init__(self, workstation_id: str):
+    def __init__(self, session: requests.Session, workstation_id: str):
+        self.session = session
         self.workstation_id = workstation_id
         self.good_cycle_count = 0
         self.reject_cycle_count = 0
@@ -58,7 +60,7 @@ class JobHandler:
             "data": {},
             "transform": {"ws": self.workstation_id, "ct": type, "cc": counter}
         }
-        post_to_IoT_agent(req)
+        post_to_IoT_agent(self.session, req)
 
     def handle_good_cycle(self):
         self.good_cycle_count += 1

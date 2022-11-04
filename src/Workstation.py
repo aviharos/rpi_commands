@@ -5,6 +5,9 @@ Made from the abstract class OrionObject
 
 # Standard Library imports
 
+# PyPI imports
+import requests
+
 # Custom imports
 from OrionObject import OrionObject
 from JobHandler import JobHandler
@@ -28,14 +31,14 @@ class Workstation(OrionObject):
             sets the available attribute of the object to False,
             also updates it in Orion
     """
-    def __init__(self, id: str):
-        super().__init__(id)
+    def __init__(self, session: requests.Session, id: str):
+        super().__init__(session, id)
         self.available = False  # off by default
         self.reset_jobHandler()
 
     def reset_jobHandler(self):
         # getting a brand new JobHandler ensures that the JobHandler's counters are 0
-        self.jobHandler = JobHandler(self.id)
+        self.jobHandler = JobHandler(self.session, self.id)
 
     def update_available(self):
         self.update_attribute(attr_name="Available", attr_value=self.available)

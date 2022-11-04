@@ -39,15 +39,18 @@ if ORION_PORT is None:
 TIMEOUT = os.environ.get("TIMEOUT")
 if TIMEOUT is None:
     TIMEOUT = 5
-    logger_Orion.warning(f"TIMEOUT environtment variable is not set, using default value: {TIMEOUT}")
+    logger_Orion.warning(
+        f"TIMEOUT environtment variable is not set, using default value: {TIMEOUT}"
+    )
 else:
     TIMEOUT = int(TIMEOUT)
 
 
-def getRequest(url: str):
+def getRequest(session: requests.Session, url: str):
     """Send a GET request to Orion
 
     Args:
+        session (requests.Session): a requests Session object
         url (str): any Orion that is suitable for GET requests
 
     Returns:
@@ -58,7 +61,7 @@ def getRequest(url: str):
         ValueError: if the json parsing fails
     """
     try:
-        response = requests.get(url, timeout=TIMEOUT)
+        response = session.get(url, timeout=TIMEOUT)
         response.close()
     except Exception as error:
         raise RuntimeError(f"Get request failed to URL: {url}") from error
@@ -73,10 +76,16 @@ def getRequest(url: str):
         return response.status_code, response.json()
 
 
-def get(object_id: str, host: str=ORION_HOST, port: int =ORION_PORT):
+def get(
+    session: requests.Session,
+    object_id: str,
+    host: str = ORION_HOST,
+    port: int = ORION_PORT,
+):
     """Get an object from Orion identified by the ID
 
     Args:
+        session (requests.Session): a requests Session object
         object_id (str): the Orion object id
         host (str): Orion host. Default: ORION_HOST environment variable
         port (int): Orion port. Default: ORION_PORT environment variable
@@ -89,7 +98,7 @@ def get(object_id: str, host: str=ORION_HOST, port: int =ORION_PORT):
     """
     url = f"http://{host}:{port}/v2/entities/{object_id}"
     logger_Orion.debug(url)
-    status_code, json_ = getRequest(url)
+    status_code, json_ = getRequest(session, url)
     if status_code != 200:
         raise RuntimeError(
             f"Failed to get object from Orion broker:{object_id}, status_code:{status_code}; no OEE data"
@@ -97,10 +106,11 @@ def get(object_id: str, host: str=ORION_HOST, port: int =ORION_PORT):
     return json_
 
 
-def exists(object_id: str):
+def exists(session: requests.Session, object_id: str):
     """Check if an object exists in Orion
 
     Args:
+        session (requests.Session): a requests Session object
         object_id (str): the object's id in Orion
 
     Returns:
@@ -108,14 +118,17 @@ def exists(object_id: str):
         False otherwise.
     """
     try:
-        get(object_id)
+        get(session, object_id)
         return True
     except RuntimeError:
         return False
 
 
-def getWorkstations():
+def getWorkstations(session):
     """Download all Workstation objects at once from Orion
+
+    Args:
+        session (requests.Session): a requests Session object
 
     Returns:
         A list of the Workstation objects
@@ -124,7 +137,7 @@ def getWorkstations():
         RuntimeError: if the get request's status_code is not 200
     """
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities?type=Workstation"
-    status_code, workstations = getRequest(url)
+    status_code, workstations = getRequest(session, url)
     if status_code != 200:
         raise RuntimeError(
             f"Critical: could not get Workstations from Orion with GET request to URL: {url}"
@@ -132,7 +145,7 @@ def getWorkstations():
     return workstations
 
 
-def update(objects: list):
+def update(session: requests.Session, objects: list):
     """Updates the objects in Orion
 
     This method takes an iterable (objects) that contain Orion objects
@@ -141,6 +154,7 @@ def update(objects: list):
     https://github.com/FIWARE/tutorials.CRUD-Operations#six-request
 
     Args:
+        session (requests.Session): a requests Session object
         objects: an iterable containing Orion objects
 
     Raises:
@@ -156,7 +170,7 @@ def update(objects: list):
         raise TypeError(
             f"The objects {objects} are not iterable, cannot make a list. Please, provide an iterable object"
         ) from error
-    response = requests.post(url, json=json_, timeout=TIMEOUT)
+    response = session.post(url, json=json_, timeout=TIMEOUT)
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update objects in Orion.\nStatus_code: {response.status_code}\nObjects:\n{objects}"
@@ -164,11 +178,13 @@ def update(objects: list):
     else:
         return response.status_code
 
-def update_attribute(id: str, attr_name: str, value):
+
+def update_attribute(session: requests.Session, id: str, attr_name: str, value):
     """Update an attribute of the Orion object specified by id with a given value
 
     Args:
-        id (str): the Orion id 
+        session (requests.Session): a requests Session object
+        id (str): the Orion id
         attr_name (str): the attribute's name
         value (any): the attribute's desired value
 
@@ -183,7 +199,9 @@ def update_attribute(id: str, attr_name: str, value):
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities/{id}/attrs/{attr_name}/value"
     logger_Orion.debug(url)
     logger_Orion.debug(f"data: {str(value)}")
-    response = requests.put(url, headers={"Content-Type": "text/plain"}, data=str(value), timeout=TIMEOUT)
+    response = session.put(
+        url, headers={"Content-Type": "text/plain"}, data=str(value), timeout=TIMEOUT
+    )
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update the attribute {attr_name} of {id} with {value} in Orion.\nStatus_code: {response.status_code}"

@@ -5,6 +5,9 @@ Made from the abstract class OrionObject
 
 # Standard Library imports
 
+# PyPI imports
+import requests
+
 # Custom imports
 from OrionObject import OrionObject
 
@@ -41,8 +44,8 @@ class Storage(OrionObject):
             resets the storage's counter, also updates it in Orion
 
     """
-    def __init__(self, id: str, capacity: int, step_size: int, type: str):
-        super().__init__(id)
+    def __init__(self, session: requests.Session, id: str, capacity: int, step_size: int, type: str):
+        super().__init__(session, id)
         self.capacity = capacity
         self.step_size = step_size
         self.type = type

@@ -10,19 +10,23 @@ import glob
 import sys
 
 # PyPI imports
+import requests
 
 # Custom imports
 sys.path.insert(0, '../src')
 import Orion
 
+
 def main():
+    session = requests.Session()
     jsons = glob.glob('../json/*.json')
     objects = []
     for json_ in jsons:
         with open(json_, 'r') as f:
             obj = json.load(f)
         objects.append(obj)
-    Orion.update(objects)
+    Orion.update(session, objects)
+    session.close()
 
 if __name__ == '__main__':
     main()

@@ -12,6 +12,7 @@ import sys
 import os
 
 # PyPI imports
+import requests
 import serial
 
 # custom imports
@@ -32,7 +33,7 @@ def read_all_commands():
     file = os.path.join("..", "commands.json")
     return read_json(file)
 
-def init_objects():
+def init_objects(session: requests.Session):
     objects = {}
     files = glob.glob(os.path.join("..", "json", "*.json"))
     for file in files:
@@ -41,11 +42,11 @@ def init_objects():
         objects[id] = {}
         objects[id]["orion"] = object
         if object["type"] == "Storage":
-            objects[id]["py"] = Storage(id, object["Capacity"]["value"], object["Step"]["value"], object["SubType"]["value"])
+            objects[id]["py"] = Storage(session, id, object["Capacity"]["value"], object["Step"]["value"], object["SubType"]["value"])
         if object["type"] == "Workstation":
-            objects[id]["py"] = Workstation(id)
+            objects[id]["py"] = Workstation(session, id)
         if object["type"] == "Job":
-            objects[id]["py"] = JobHandler(object["RefWorkstation"]["value"])
+            objects[id]["py"] = JobHandler(session, object["RefWorkstation"]["value"])
     return objects
 
 def parse_concatenated_jsons(s:str):
@@ -59,13 +60,15 @@ def main():
         print("Replace /dev/ttyUSB0 with the Arduino board that will send the event numbers")
         sys.exit(1)
 
+    session = requests.Session()
+
     commands = read_all_commands()
     logger.info("Successfully read commands")
     logger.debug(f"commands:\n{commands}")
-    objects = init_objects()
+    objects = init_objects(session)
     logger.info("Successfully read objects")
     logger.debug(f"Objects:\n{objects}")
-    commandHandler = CommandHandler(commands, objects)
+    commandHandler = CommandHandler(session, commands, objects)
 
     dev = sys.argv[1]
     ser = serial.Serial(dev, 9600, timeout=1)
@@ -96,6 +99,7 @@ def main():
                     for command_id, arg in set_of_commands.items():
                         commandHandler.handle_command(command_id, arg)
     except KeyboardInterrupt:
+        session.close()
         logger.info("Exiting...")
 
 if __name__ == "__main__":
