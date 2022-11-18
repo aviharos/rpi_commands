@@ -107,6 +107,7 @@ def main():
         except KeyboardInterrupt:
             session.close()
             logger.info("Exiting...")
+            sys.exit()
         except Exception as error:
             logger.error(f"{error}")
 
