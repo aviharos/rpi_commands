@@ -24,18 +24,24 @@ from Workstation import Workstation
 
 logger = getLogger(__name__)
 
+BAUD_RATE = 9600
+
+RPI_COMMANDS_CONFIG = os.environ.get("RPI_COMMANDS_CONFIG")
+if RPI_COMMANDS_CONFIG == None:
+    logger.critical("Fatal: the RPI_COMMANDS_CONFIG environment variable is not set")
+
 def read_json(file: str):
     with open(file, "r") as f:
         object = json.load(f)
     return object
 
 def read_all_commands():
-    file = os.path.join("..", "commands.json")
+    file = os.path.join(RPI_COMMANDS_CONFIG, "commands.json")
     return read_json(file)
 
 def init_objects(session: requests.Session):
     objects = {}
-    files = glob.glob(os.path.join("..", "json", "*.json"))
+    files = glob.glob(os.path.join(RPI_COMMANDS_CONFIG, "json", "*.json"))
     for file in files:
         object = read_json(file)
         id = object["id"]
@@ -71,12 +77,12 @@ def main():
     commandHandler = CommandHandler(session, commands, objects)
 
     dev = sys.argv[1]
-    ser = serial.Serial(dev, 9600, timeout=1)
+    ser = serial.Serial(dev, BAUD_RATE, timeout=1)
     ser.reset_input_buffer()
     logger.info("Serial connection initialised")
 
-    try:
-        while True:
+    while True:
+        try:
             if ser.in_waiting > 0:
                 line = ser.readline().decode("utf-8").rstrip()
                 ser.reset_input_buffer()
@@ -98,9 +104,11 @@ def main():
                     Now let's handle each command separately"""
                     for command_id, arg in set_of_commands.items():
                         commandHandler.handle_command(command_id, arg)
-    except KeyboardInterrupt:
-        session.close()
-        logger.info("Exiting...")
+        except KeyboardInterrupt:
+            session.close()
+            logger.info("Exiting...")
+        except Exception as error:
+            logger.error(f"{error}")
 
 if __name__ == "__main__":
     main()
