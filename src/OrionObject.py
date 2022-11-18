@@ -23,11 +23,11 @@ class OrionObject(ABC):
 
         since the Orion broker stores data in JSON objects,
         we need to convert some values to be compatible with it"""
-        if attr_value == None:
+        if attr_value is None:
             attr_value = "null"
-        if attr_value == True:
+        if attr_value is True:
             attr_value = "true"
-        if attr_value == False:
+        if attr_value is False:
             attr_value = "false"
         Orion.update_attribute(self.session, self.id, attr_name, attr_value)
 
