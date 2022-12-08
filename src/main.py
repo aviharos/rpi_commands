@@ -10,6 +10,7 @@ import glob
 import json
 import sys
 import os
+import time
 
 # PyPI imports
 import requests
@@ -25,6 +26,7 @@ from Workstation import Workstation
 logger = getLogger(__name__)
 
 BAUD_RATE = 9600
+BOOT_TIME = 20
 
 RPI_COMMANDS_CONFIG = os.environ.get("RPI_COMMANDS_CONFIG")
 if RPI_COMMANDS_CONFIG == None:
@@ -65,6 +67,8 @@ def main():
         print("./main.py /dev/ttyUSB0")
         print("Replace /dev/ttyUSB0 with the Arduino board that will send the event numbers")
         sys.exit(1)
+
+    time.sleep(BOOT_TIME)
 
     session = requests.Session()
 
