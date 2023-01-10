@@ -16,9 +16,6 @@ import serial
 # custom imports
 from Logger import getLogger
 from CommandHandler import CommandHandler
-from Storage import Storage
-from JobHandler import JobHandler
-from Workstation import Workstation
 
 logger = getLogger(__name__)
 
