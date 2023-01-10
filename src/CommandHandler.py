@@ -25,7 +25,6 @@ the Workstation's handle_good_cycle command will be called.
 # Standard library imports
 
 # PyPI imports
-import requests
 
 # Custom imports
 from Storage import Storage
@@ -34,8 +33,7 @@ from post_to_IoT_agent import post_to_IoT_agent
 
 
 class CommandHandler():
-    def __init__(self, session: requests.Session, commands:dict, objects: dict):
-        self.session = session
+    def __init__(self, commands:dict, objects: dict):
         self.commands = commands
         self.objects = objects
 
@@ -64,7 +62,7 @@ class CommandHandler():
         req = self.command["request"]
         if self.arg is not None:
             req["data"] = self.arg if self.is_num(self.arg) else str(self.arg)
-        post_to_IoT_agent(self.session, req)
+        post_to_IoT_agent(req)
 
     def handle_non_special_command(self):
         if "object_id" not in self.command:

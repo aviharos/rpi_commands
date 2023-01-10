@@ -7,15 +7,13 @@ Used by Storage.py, Workstation.py, Job.py
 from abc import ABC
 
 # PyPI imports
-import requests
 
 # Custom imports
 import Orion
 
 
 class OrionObject(ABC):
-    def __init__(self, session: requests.Session, id):
-        self.session = session
+    def __init__(self, id):
         self.id = id
 
     def update_attribute(self, attr_name, attr_value):
@@ -29,5 +27,5 @@ class OrionObject(ABC):
             attr_value = "true"
         if attr_value is False:
             attr_value = "false"
-        Orion.update_attribute(self.session, self.id, attr_name, attr_value)
+        Orion.update_attribute(self.id, attr_name, attr_value)
 

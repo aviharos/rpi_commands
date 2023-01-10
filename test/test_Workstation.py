@@ -9,8 +9,6 @@ sys.path.insert(0, os.path.join("..", "src"))
 from Workstation import Workstation
 import Orion
 
-session = requests.Session()
-
 WORKSTATION_ID = "urn:ngsiv2:i40Asset:InjectionMouldingMachine1"
 
 class TestWorkstation(unittest.TestCase):
@@ -24,25 +22,25 @@ class TestWorkstation(unittest.TestCase):
 
     def setUp(self):
         reupload_jsons_to_Orion.main()
-        self.workstation = Workstation(session, WORKSTATION_ID)
+        self.workstation = Workstation(WORKSTATION_ID)
 
     def tearDown(self):
         pass
 
     def test_turn_on(self):
         self.workstation.turn_on()
-        obj_ = Orion.get(session, WORKSTATION_ID)
+        obj_ = Orion.get(WORKSTATION_ID)
         self.assertEqual(True, obj_["available"]["value"])
 
     def test_turn_off(self):
         # preparations
-        Orion.update_attribute(session, WORKSTATION_ID, "available", True)
-        obj_ = Orion.get(session, WORKSTATION_ID)
+        Orion.update_attribute(WORKSTATION_ID, "available", True)
+        obj_ = Orion.get(WORKSTATION_ID)
         # did the preparations succeed?
         self.assertEqual(True, obj_["available"]["value"])
         # the real test
         self.workstation.turn_off()
-        obj_ = Orion.get(session, WORKSTATION_ID)
+        obj_ = Orion.get(WORKSTATION_ID)
         self.assertEqual(False, obj_["available"]["value"])
 
     def test_reset_jobHandler(self):
@@ -54,12 +52,12 @@ class TestWorkstation(unittest.TestCase):
 
     def test_handle_good_cycle(self):
         self.workstation.handle_good_cycle()
-        job = Orion.get(session, "urn:ngsiv2:i40Process:Job202200045")
+        job = Orion.get("urn:ngsiv2:i40Process:Job202200045")
         self.assertEqual(8, job["goodPartCounter"]["value"])
 
     def test_handle_reject_cycle(self):
         self.workstation.handle_reject_cycle()
-        job = Orion.get(session, "urn:ngsiv2:i40Process:Job202200045")
+        job = Orion.get("urn:ngsiv2:i40Process:Job202200045")
         self.assertEqual(8, job["rejectPartCounter"]["value"])
 
 if __name__ == "__main__":

@@ -11,7 +11,6 @@ import os
 import sys
 
 # PyPI imports
-import requests
 
 # Custom imports
 sys.path.insert(0, '../src')
@@ -20,15 +19,13 @@ RPI_COMMANDS_CONFIG = os.environ.get("RPI_COMMANDS_CONFIG")
 
 
 def main():
-    session = requests.Session()
     jsons = glob.glob(f'{RPI_COMMANDS_CONFIG}/json/*.json')
     objects = []
     for json_ in jsons:
         with open(json_, 'r') as f:
             obj = json.load(f)
         objects.append(obj)
-    Orion.update(session, objects)
-    session.close()
+    Orion.update(objects)
 
 if __name__ == '__main__':
     main()

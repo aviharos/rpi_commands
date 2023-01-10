@@ -13,7 +13,6 @@ import os
 import time
 
 # PyPI imports
-import requests
 import serial
 
 # custom imports
@@ -41,7 +40,7 @@ def read_all_commands():
     file = os.path.join(RPI_COMMANDS_CONFIG, "commands.json")
     return read_json(file)
 
-def init_objects(session: requests.Session):
+def init_objects():
     objects = {}
     files = glob.glob(os.path.join(RPI_COMMANDS_CONFIG, "json", "*.json"))
     for file in files:
@@ -55,11 +54,11 @@ def init_objects(session: requests.Session):
         if "i40AssetType" not in object.keys():
             continue
         if object["i40AssetType"]["value"] == "Storage":
-            objects[id]["py"] = Storage(session, id, object["capacity"]["value"], object["step"]["value"], object["i40AssetSubType"]["value"])
+            objects[id]["py"] = Storage(id, object["capacity"]["value"], object["step"]["value"], object["i40AssetSubType"]["value"])
         if object["i40AssetType"]["value"] == "Workstation":
-            objects[id]["py"] = Workstation(session, id)
+            objects[id]["py"] = Workstation(id)
         if object["i40AssetType"]["value"] == "Job":
-            objects[id]["py"] = JobHandler(session, object["refWorkstation"]["value"])
+            objects[id]["py"] = JobHandler(object["refWorkstation"]["value"])
     return objects
 
 def parse_concatenated_jsons(s:str):
@@ -75,15 +74,13 @@ def main():
 
     time.sleep(BOOT_TIME)
 
-    session = requests.Session()
-
     commands = read_all_commands()
     logger.info("Successfully read commands")
     logger.debug(f"commands:\n{commands}")
-    objects = init_objects(session)
+    objects = init_objects()
     logger.info("Successfully read objects")
     logger.debug(f"Objects:\n{objects}")
-    commandHandler = CommandHandler(session, commands, objects)
+    commandHandler = CommandHandler(commands, objects)
 
     dev = sys.argv[1]
     ser = serial.Serial(dev, BAUD_RATE, timeout=1)
@@ -114,7 +111,6 @@ def main():
                     for command_id, arg in set_of_commands.items():
                         commandHandler.handle_command(command_id, arg)
         except KeyboardInterrupt:
-            session.close()
             logger.info("Exiting...")
             sys.exit()
         except Exception as error:

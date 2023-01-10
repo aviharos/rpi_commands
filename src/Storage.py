@@ -6,7 +6,6 @@ Made from the abstract class OrionObject
 # Standard Library imports
 
 # PyPI imports
-import requests
 
 # Custom imports
 from OrionObject import OrionObject
@@ -47,13 +46,12 @@ class Storage(OrionObject):
 
     def __init__(
         self,
-        session: requests.Session,
         id: str,
         capacity: int,
         step_size: int,
         type: str,
     ):
-        super().__init__(session, id)
+        super().__init__(id)
         self.capacity = capacity
         self.step_size = step_size
         self.type = type
