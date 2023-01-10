@@ -39,6 +39,13 @@ class CommandHandler():
         self.commands = commands
         self.objects = objects
 
+    def is_num(self, x):
+        try:
+            float(x)
+            return True
+        except:
+            return False
+
     def handle_command(self, command_id: str, arg=None):
         self.arg = arg
         if command_id not in self.commands:
@@ -56,7 +63,7 @@ class CommandHandler():
     def handle_special_command(self):
         req = self.command["request"]
         if self.arg is not None:
-            req["data"] = str(self.arg)
+            req["data"] = self.arg if self.is_num(self.arg) else str(self.arg)
         post_to_IoT_agent(self.session, req)
 
     def handle_non_special_command(self):
@@ -68,28 +75,32 @@ class CommandHandler():
         self.object = self.objects[self.object_id]["py"]
         if isinstance(self.object, Storage):
             self.handle_storage()
-        elif isinstance(self.object, Workstation):
+        if isinstance(self.object, Workstation):
             self.handle_workstation()
 
     def handle_storage(self):
+        if self.command["type"] not in ("step", "reset", "set_empty", "set_full"):
+            raise NotImplementedError(f"command type {self.command['type']} not implemented for {self.object.id}")
         if self.command["type"] == "step":
             self.object.step()
-        elif self.command["type"] == "reset":
+        if self.command["type"] == "reset":
             self.object.reset()
-        else:
-            raise NotImplementedError(f"command type {self.command['type']} not implemented for {self.object.id}")
+        if self.command["type"] == "set_empty":
+            self.object.set_empty()
+        if self.command["type"] == "set_full":
+            self.object.set_full()
 
     def handle_workstation(self):
+        if self.command["type"] not in ("turn_on", "turn_off", "handle_good_cycle", "handle_reject_cycle", "new_job"):
+            raise NotImplementedError(f"command type {self.command['type']} not implemented for {self.object.id}")
         if self.command["type"] == "turn_on":
             self.object.turn_on()
-        elif self.command["type"] == "turn_off":
+        if self.command["type"] == "turn_off":
             self.object.turn_off()
-        elif self.command["type"] == "handle_good_cycle":
+        if self.command["type"] == "handle_good_cycle":
             self.object.handle_good_cycle()
-        elif self.command["type"] == "handle_reject_cycle":
+        if self.command["type"] == "handle_reject_cycle":
             self.object.handle_reject_cycle()
-        elif self.command["type"] == "reset":
+        if self.command["type"] == "new_job":
             self.object.reset_jobHandler()
-        else:
-            raise NotImplementedError(f"command type {self.command['type']} not implemented for {self.object.id}")
 

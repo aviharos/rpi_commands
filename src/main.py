@@ -45,16 +45,21 @@ def init_objects(session: requests.Session):
     objects = {}
     files = glob.glob(os.path.join(RPI_COMMANDS_CONFIG, "json", "*.json"))
     for file in files:
+        logger.debug(f"file: {file}")
         object = read_json(file)
+        logger.debug(f"""file read: {file}
+{object}""")
         id = object["id"]
         objects[id] = {}
         objects[id]["orion"] = object
-        if object["type"] == "Storage":
-            objects[id]["py"] = Storage(session, id, object["Capacity"]["value"], object["Step"]["value"], object["SubType"]["value"])
-        if object["type"] == "Workstation":
+        if "i40AssetType" not in object.keys():
+            continue
+        if object["i40AssetType"]["value"] == "Storage":
+            objects[id]["py"] = Storage(session, id, object["capacity"]["value"], object["step"]["value"], object["i40AssetSubType"]["value"])
+        if object["i40AssetType"]["value"] == "Workstation":
             objects[id]["py"] = Workstation(session, id)
-        if object["type"] == "Job":
-            objects[id]["py"] = JobHandler(session, object["RefWorkstation"]["value"])
+        if object["i40AssetType"]["value"] == "Job":
+            objects[id]["py"] = JobHandler(session, object["refWorkstation"]["value"])
     return objects
 
 def parse_concatenated_jsons(s:str):

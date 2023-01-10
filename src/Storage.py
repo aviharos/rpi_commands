@@ -67,13 +67,21 @@ class Storage(OrionObject):
             )
 
     def update_counter(self):
-        self.update_attribute(attr_name="Counter", attr_value=self.counter)
+        self.update_attribute(attr_name="counter", attr_value=self.counter)
 
     def reset(self):
         if self.type == "emptying":
             self.counter = self.capacity
         elif self.type == "filling":
             self.counter = 0
+        self.update_counter()
+
+    def set_empty(self):
+        self.counter = 0
+        self.update_counter()
+
+    def set_full(self):
+        self.counter = self.capacity
         self.update_counter()
 
     def step(self):

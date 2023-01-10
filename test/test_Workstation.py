@@ -11,6 +11,8 @@ import Orion
 
 session = requests.Session()
 
+WORKSTATION_ID = "urn:ngsiv2:i40Asset:InjectionMouldingMachine1"
+
 class TestWorkstation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,26 +24,26 @@ class TestWorkstation(unittest.TestCase):
 
     def setUp(self):
         reupload_jsons_to_Orion.main()
-        self.workstation = Workstation(session, "urn:ngsi_ld:Workstation:InjectionMoulding1")
+        self.workstation = Workstation(session, WORKSTATION_ID)
 
     def tearDown(self):
         pass
 
     def test_turn_on(self):
         self.workstation.turn_on()
-        obj_ = Orion.get(session, "urn:ngsi_ld:Workstation:InjectionMoulding1")
-        self.assertEqual(True, obj_["Available"]["value"])
+        obj_ = Orion.get(session, WORKSTATION_ID)
+        self.assertEqual(True, obj_["available"]["value"])
 
     def test_turn_off(self):
         # preparations
-        Orion.update_attribute(session, "urn:ngsi_ld:Workstation:InjectionMoulding1", "Available", True)
-        obj_ = Orion.get(session, "urn:ngsi_ld:Workstation:InjectionMoulding1")
+        Orion.update_attribute(session, WORKSTATION_ID, "available", True)
+        obj_ = Orion.get(session, WORKSTATION_ID)
         # did the preparations succeed?
-        self.assertEqual(True, obj_["Available"]["value"])
+        self.assertEqual(True, obj_["available"]["value"])
         # the real test
         self.workstation.turn_off()
-        obj_ = Orion.get(session, "urn:ngsi_ld:Workstation:InjectionMoulding1")
-        self.assertEqual(False, obj_["Available"]["value"])
+        obj_ = Orion.get(session, WORKSTATION_ID)
+        self.assertEqual(False, obj_["available"]["value"])
 
     def test_reset_jobHandler(self):
         self.workstation.jobHandler.good_cycle_count = 1
@@ -52,13 +54,13 @@ class TestWorkstation(unittest.TestCase):
 
     def test_handle_good_cycle(self):
         self.workstation.handle_good_cycle()
-        job = Orion.get(session, "urn:ngsi_ld:Job:202200045")
-        self.assertEqual(8, job["GoodPartCounter"]["value"])
+        job = Orion.get(session, "urn:ngsiv2:i40Process:Job202200045")
+        self.assertEqual(8, job["goodPartCounter"]["value"])
 
     def test_handle_reject_cycle(self):
         self.workstation.handle_reject_cycle()
-        job = Orion.get(session, "urn:ngsi_ld:Job:202200045")
-        self.assertEqual(8, job["RejectPartCounter"]["value"])
+        job = Orion.get(session, "urn:ngsiv2:i40Process:Job202200045")
+        self.assertEqual(8, job["rejectPartCounter"]["value"])
 
 if __name__ == "__main__":
     unittest.main()
