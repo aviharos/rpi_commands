@@ -6,10 +6,8 @@ by sending pre-configured data packet to the Orion broker.
 """
 
 # Standard Library imports
-import glob
 import json
 import sys
-import os
 import time
 
 # PyPI imports
@@ -27,39 +25,6 @@ logger = getLogger(__name__)
 BAUD_RATE = 9600
 BOOT_TIME = 20
 
-RPI_COMMANDS_CONFIG = os.environ.get("RPI_COMMANDS_CONFIG")
-if RPI_COMMANDS_CONFIG == None:
-    logger.critical("Fatal: the RPI_COMMANDS_CONFIG environment variable is not set")
-
-def read_json(file: str):
-    with open(file, "r") as f:
-        object = json.load(f)
-    return object
-
-def read_all_commands():
-    file = os.path.join(RPI_COMMANDS_CONFIG, "commands.json")
-    return read_json(file)
-
-def init_objects():
-    objects = {}
-    files = glob.glob(os.path.join(RPI_COMMANDS_CONFIG, "json", "*.json"))
-    for file in files:
-        logger.debug(f"file: {file}")
-        object = read_json(file)
-        logger.debug(f"""file read: {file}
-{object}""")
-        id = object["id"]
-        objects[id] = {}
-        objects[id]["orion"] = object
-        if "i40AssetType" not in object.keys():
-            continue
-        if object["i40AssetType"]["value"] == "Storage":
-            objects[id]["py"] = Storage(id, object["capacity"]["value"], object["step"]["value"], object["i40AssetSubType"]["value"])
-        if object["i40AssetType"]["value"] == "Workstation":
-            objects[id]["py"] = Workstation(id)
-        if object["i40AssetType"]["value"] == "Job":
-            objects[id]["py"] = JobHandler(object["refWorkstation"]["value"])
-    return objects
 
 def parse_concatenated_jsons(s:str):
     comma_separated = s.replace("}{", "},{")
@@ -74,13 +39,7 @@ def main():
 
     time.sleep(BOOT_TIME)
 
-    commands = read_all_commands()
-    logger.info("Successfully read commands")
-    logger.debug(f"commands:\n{commands}")
-    objects = init_objects()
-    logger.info("Successfully read objects")
-    logger.debug(f"Objects:\n{objects}")
-    commandHandler = CommandHandler(commands, objects)
+    commandHandler = CommandHandler()
 
     dev = sys.argv[1]
     ser = serial.Serial(dev, BAUD_RATE, timeout=1)

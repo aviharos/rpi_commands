@@ -23,19 +23,63 @@ the Workstation's handle_good_cycle command will be called.
 """
 
 # Standard library imports
+import glob
+import json
+import os
 
 # PyPI imports
 
 # Custom imports
+from Logger import getLogger
+from JobHandler import JobHandler
 from Storage import Storage
 from Workstation import Workstation
 from post_to_IoT_agent import post_to_IoT_agent
 
 
 class CommandHandler():
-    def __init__(self, commands:dict, objects: dict):
-        self.commands = commands
-        self.objects = objects
+    logger = getLogger(__name__)
+    RPI_COMMANDS_CONFIG = os.environ.get("RPI_COMMANDS_CONFIG")
+    if RPI_COMMANDS_CONFIG == None:
+        logger.critical("Fatal: the RPI_COMMANDS_CONFIG environment variable is not set")
+
+    def __init__(self):
+        self.commands = self.read_all_commands()
+        self.logger.info("Successfully read commands")
+        self.logger.debug(f"commands: {self.commands}")
+        self.objects = self.init_objects()
+        self.logger.info("Successfully read objects")
+        self.logger.debug(f"objects:\n{self.objects}")
+
+    def read_json(self, file: str):
+        with open(file, "r") as f:
+            object = json.load(f)
+        return object
+
+    def read_all_commands(self):
+        file = os.path.join(self.RPI_COMMANDS_CONFIG, "commands.json")
+        return self.read_json(file)
+
+    def init_objects(self):
+        objects = {}
+        files = glob.glob(os.path.join(self.RPI_COMMANDS_CONFIG, "json", "*.json"))
+        for file in files:
+            self.logger.debug(f"file: {file}")
+            object = self.read_json(file)
+            self.logger.debug(f"""file read: {file}
+    {object}""")
+            id = object["id"]
+            objects[id] = {}
+            objects[id]["orion"] = object
+            if "i40AssetType" not in object.keys():
+                continue
+            if object["i40AssetType"]["value"] == "Storage":
+                objects[id]["py"] = Storage(id, object["capacity"]["value"], object["step"]["value"], object["i40AssetSubType"]["value"])
+            if object["i40AssetType"]["value"] == "Workstation":
+                objects[id]["py"] = Workstation(id)
+            if object["i40AssetType"]["value"] == "Job":
+                objects[id]["py"] = JobHandler(object["refWorkstation"]["value"])
+        return objects
 
     def is_num(self, x):
         try:

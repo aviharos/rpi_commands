@@ -23,8 +23,7 @@ TUL_STORAGE_ID = "urn:ngsiv2:i40Asset:TrayUnloaderStorage1"
 class TestCommandHandler(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.objects = main.init_objects()
-        cls.commands = main.read_all_commands()
+        pass
 
     @classmethod
     def tearDownClass(cls):
@@ -35,9 +34,7 @@ class TestCommandHandler(unittest.TestCase):
         self.trayLoaderStorage = Storage(TL_STORAGE_ID, capacity=2, step_size=-1, type="emptying")
         self.trayUnloaderStorage = Storage(TUL_STORAGE_ID, capacity=0, step_size=1, type="filling")
         self.workstation = Workstation("urn:ngsiv2:i40Asset:InjectionMouldingMachine1")
-        cp_commands = copy.deepcopy(self.commands)
-        cp_objects = copy.deepcopy(self.objects)
-        self.commandHandler = CommandHandler(cp_commands, cp_objects)
+        self.commandHandler = CommandHandler()
 
     def tearDown(self):
         pass
