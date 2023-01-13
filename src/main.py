@@ -23,7 +23,7 @@ BAUD_RATE = 9600
 BOOT_TIME = 20
 
 
-def parse_concatenated_jsons(s:str):
+def parse_concatenated_jsons(s: str):
     comma_separated = s.replace("}{", "},{")
     return json.loads(f"[{comma_separated}]")
 
