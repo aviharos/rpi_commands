@@ -77,8 +77,12 @@ def is_reachable():
             False otherwise
     """
     url = f"http://{ORION_HOST}:{ORION_PORT}/version"
-    status_code, _ = getRequest(url)
-    return status_code == 200
+    try:
+        status_code, _ = getRequest(url)
+        return status_code == 200
+    except Exception as error:
+        logger_Orion.error(f"Error while trying to reach Orion: {error}")
+        return False
 
 def get(object_id: str, host: str=ORION_HOST, port: int =ORION_PORT):
     """Get an object from Orion identified by the ID
