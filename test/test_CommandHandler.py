@@ -1,9 +1,7 @@
-import copy
 import os
 import sys
 import unittest
 
-import requests
 
 from modules import reupload_jsons_to_Orion
 
@@ -12,7 +10,6 @@ from Storage import Storage
 from Workstation import Workstation
 from CommandHandler import CommandHandler
 import Orion
-import main
 from Logger import getLogger
 
 logger = getLogger(__name__)
@@ -64,9 +61,10 @@ downloaded job:
         self.assertEqual(8, job["rejectPartCounter"]["value"])
 
         # reset
+        Orion.update_attribute("urn:ngsiv2:i40Asset:InjectionMouldingMachine1", "refJob", "Relationship", "urn:ngsiv2:i40Process:Job202200046")
         self.commandHandler.handle_command("InjectionMouldingMachine1_new_job")
-        self.assertEqual(0, self.commandHandler.objects["urn:ngsiv2:i40Asset:InjectionMouldingMachine1"]["py"].jobHandler.good_cycle_count)
-        self.assertEqual(0, self.commandHandler.objects["urn:ngsiv2:i40Asset:InjectionMouldingMachine1"]["py"].jobHandler.reject_cycle_count)
+        self.assertEqual(0, self.commandHandler.objects["urn:ngsiv2:i40Asset:InjectionMouldingMachine1"]["py"].jobHandler.good_cycle_counter)
+        self.assertEqual(0, self.commandHandler.objects["urn:ngsiv2:i40Asset:InjectionMouldingMachine1"]["py"].jobHandler.reject_cycle_counter)
 
     def test_handle_storage(self):
         # TrayLoaderStorage1

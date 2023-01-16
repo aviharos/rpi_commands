@@ -32,18 +32,9 @@ ORION_PORT = os.environ.get("ORION_PORT")
 if ORION_PORT is None:
     default_port = 1026
     logger_Orion.warning(
-        f"ORION_PORT environment variable not set, using default value: {default_port}"
+        f"Warning: ORION_PORT environment variable not set, using default value: {default_port}"
     )
     ORION_PORT = default_port
-
-TIMEOUT = os.environ.get("TIMEOUT")
-if TIMEOUT is None:
-    TIMEOUT = 5
-    logger_Orion.warning(
-        f"TIMEOUT environtment variable is not set, using default value: {TIMEOUT}"
-    )
-else:
-    TIMEOUT = int(TIMEOUT)
 
 
 def getRequest(url: str):
@@ -60,7 +51,7 @@ def getRequest(url: str):
         ValueError: if the json parsing fails
     """
     try:
-        response = requests.get(url, timeout=TIMEOUT)
+        response = requests.get(url)
         response.close()
     except Exception as error:
         raise RuntimeError(f"Get request failed to URL: {url}") from error
@@ -74,12 +65,22 @@ def getRequest(url: str):
             ) from error
         return response.status_code, response.json()
 
+def is_reachable():
+    """Return True if the OCB is reachable, False otherwise
 
-def get(
-    object_id: str,
-    host: str = ORION_HOST,
-    port: int = ORION_PORT,
-):
+    Args:
+        None
+
+    Returns:
+        Boolean:
+            True if the OCB is reachable
+            False otherwise
+    """
+    url = f"http://{ORION_HOST}:{ORION_PORT}/version"
+    status_code, _ = getRequest(url)
+    return status_code == 200
+
+def get(object_id: str, host: str=ORION_HOST, port: int =ORION_PORT):
     """Get an object from Orion identified by the ID
 
     Args:
@@ -94,7 +95,7 @@ def get(
         RuntimeError: if the get request's status code is not 200
     """
     url = f"http://{host}:{port}/v2/entities/{object_id}"
-    logger_Orion.debug(url)
+    logger_Orion.debug(f"Get: {url}")
     status_code, json_ = getRequest(url)
     if status_code != 200:
         raise RuntimeError(
@@ -123,16 +124,13 @@ def exists(object_id: str):
 def getWorkstations():
     """Download all Workstation objects at once from Orion
 
-    Args:
-        None
-
     Returns:
         A list of the Workstation objects
 
     Raises:
         RuntimeError: if the get request's status_code is not 200
     """
-    url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities?type=Workstation"
+    url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities?type=i40Asset&q=i40AssetType==Workstation"
     status_code, workstations = getRequest(url)
     if status_code != 200:
         raise RuntimeError(
@@ -156,16 +154,16 @@ def update(objects: list):
         TypeError: if the objects does not contain an iterable
         RuntimeError: if the POST request's status code is not 204
     """
-    # logger_Orion.debug(f"update: objects: {objects}")
+    logger_Orion.debug(f"update: objects: {objects}")
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/op/update"
     try:
-        json_ = {"actionType": "append", "entities": list(objects)}
-        logger_Orion.debug(f"update: json_: {json_}")
+        data = {"actionType": "append", "entities": list(objects)}
+        logger_Orion.debug(f"update: data: {data}")
     except TypeError as error:
         raise TypeError(
             f"The objects {objects} are not iterable, cannot make a list. Please, provide an iterable object"
         ) from error
-    response = requests.post(url, json=json_, timeout=TIMEOUT)
+    response = requests.post(url, json=data)
     if response.status_code != 204:
         raise RuntimeError(
             f"Failed to update objects in Orion.\nStatus_code: {response.status_code}\nObjects:\n{objects}"
@@ -173,32 +171,46 @@ def update(objects: list):
     else:
         return response.status_code
 
+def update_attribute(object_id: str, attribute_name: str, attribute_type: str, attribute_value):
+    """Updates the object's given attribute in Orion
 
-def update_attribute(id: str, attr_name: str, value):
-    """Update an attribute of the Orion object specified by id with a given value
+    This method takes an object id and an attribute name and value pair
+    then updates the specified attribute with the given value in Orion.
+    If the attribute already exists, it will be overwritten. More information:
+    https://github.com/FIWARE/tutorials.CRUD-Operations#batch-create-new-data-entities-or-attributes
 
     Args:
-        id (str): the Orion id
-        attr_name (str): the attribute's name
-        value (any): the attribute's desired value
-
-    Returns:
-        The response's status code if the operation was successful (204)
+        object_id (str): the object's id in Orion
+        attribute_name (str): the specified attribute's name
+        attribute_type (str): the specified attribute's type
+        attribute_value (string or dict): the specified attribute's new value
 
     Raises:
-        RuntimeError:
-            if the response's status code is not 204
+        RuntimeError: if the POST request's status code is not 204
     """
-    logger_Orion.debug(f"id: {id}, attr_name: {attr_name}, value: {value}")
-    url = f"http://{ORION_HOST}:{ORION_PORT}/v2/entities/{id}/attrs/{attr_name}/value"
-    logger_Orion.debug(url)
-    logger_Orion.debug(f"data: {str(value)}")
-    response = requests.put(
-        url, headers={"Content-Type": "text/plain"}, data=str(value), timeout=TIMEOUT
-    )
+    logger_Orion.debug(f"""update_attribute:
+object_id: {object_id}
+attribute_name: {attribute_name}
+attribute_value: {attribute_value}""")
+    url = f"http://{ORION_HOST}:{ORION_PORT}/v2/op/update"
+    logger_Orion.debug(f"update_attribute: url: {url}")
+    payload = {
+        "id": object_id,
+        attribute_name: {
+            "type": attribute_type,
+            "value": attribute_value
+            }
+        }
+    data = {
+        "actionType": "append",
+        "entities": [payload]
+        }
+    logger_Orion.debug(f"update_attribute: data: {data}")
+    response = requests.post(url, json=data)
     if response.status_code != 204:
         raise RuntimeError(
-            f"Failed to update the attribute {attr_name} of {id} with {value} in Orion.\nStatus_code: {response.status_code}"
+            f"Failed to update attribute in Orion. Status_code: {response.status_code}"
         )
     else:
         return response.status_code
+

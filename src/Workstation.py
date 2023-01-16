@@ -40,7 +40,7 @@ class Workstation(OrionObject):
         self.jobHandler = JobHandler(self.id)
 
     def update_available(self):
-        self.update_attribute(attr_name="available", attr_value=self.available)
+        self.update_attribute(attr_name="available", attr_type="Boolean", attr_value=self.available)
 
     def turn_on(self):
         self.available = True

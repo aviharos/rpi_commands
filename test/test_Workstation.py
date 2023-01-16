@@ -34,7 +34,7 @@ class TestWorkstation(unittest.TestCase):
 
     def test_turn_off(self):
         # preparations
-        Orion.update_attribute(WORKSTATION_ID, "available", True)
+        Orion.update_attribute(WORKSTATION_ID, "available", "Boolean", True)
         obj_ = Orion.get(WORKSTATION_ID)
         # did the preparations succeed?
         self.assertEqual(True, obj_["available"]["value"])
@@ -44,11 +44,11 @@ class TestWorkstation(unittest.TestCase):
         self.assertEqual(False, obj_["available"]["value"])
 
     def test_reset_jobHandler(self):
-        self.workstation.jobHandler.good_cycle_count = 1
-        self.workstation.jobHandler.reject_cycle_count = 1
+        self.workstation.jobHandler.good_cycle_counter = 1
+        self.workstation.jobHandler.reject_cycle_counter = 1
         self.workstation.reset_jobHandler()
-        self.assertEqual(0, self.workstation.jobHandler.good_cycle_count)
-        self.assertEqual(0, self.workstation.jobHandler.reject_cycle_count)
+        self.assertEqual(0, self.workstation.jobHandler.good_cycle_counter)
+        self.assertEqual(0, self.workstation.jobHandler.reject_cycle_counter)
 
     def test_handle_good_cycle(self):
         self.workstation.handle_good_cycle()
