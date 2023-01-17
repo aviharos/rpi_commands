@@ -6,7 +6,6 @@ by sending pre-configured data packet to the Orion broker.
 """
 
 # Standard Library imports
-import errno
 import json
 import sys
 import time
@@ -32,15 +31,10 @@ def check_args():
         sys.exit(1)
 
 def init_serial_device(dev):
-    while True:
-        try:
-            ser = serial.Serial(dev, BAUD_RATE, timeout=1)
-            ser.reset_input_buffer()
-            logger.info("Serial connection initialised")
-            return ser
-        except serial.serialutil.SerialException as error:
-            logger.error(f"Error: {error}")
-            time.sleep(SERIAL_RECHECK_PERIOD)
+    ser = serial.Serial(dev, BAUD_RATE, timeout=1)
+    ser.reset_input_buffer()
+    logger.info("Serial connection initialised")
+    return ser
 
 def parse_concatenated_jsons(s: str):
     """This is necessary, because the Arduino might send
@@ -72,7 +66,7 @@ def handle_incoming_data_if_exists(commandHandler, ser):
         for set_of_commands in decoded_commands:
             handle_set_of_commands(commandHandler, set_of_commands)
 
-def loop_as_long_as_serial_connection_is_active(commandHandler, ser):
+def loop(commandHandler, ser):
     while True:
         try:
             handle_incoming_data_if_exists(commandHandler, ser)
@@ -80,9 +74,10 @@ def loop_as_long_as_serial_connection_is_active(commandHandler, ser):
             logger.error(f"{error}")
             if error.errno == 5:
                 # lost connection with serial device
-                return
+                raise
         except KeyboardInterrupt:
-            raise
+            logger.info("Exiting...")
+            sys.exit()
         except Exception as error:
             logger.error(f"{error}")
 
@@ -91,15 +86,8 @@ def main():
     time.sleep(BOOT_TIME)
     commandHandler = CommandHandler()
     dev = sys.argv[1]
-    while True:
-        try:
-            ser = init_serial_device(dev)
-            loop_as_long_as_serial_connection_is_active(commandHandler, ser)
-        except KeyboardInterrupt:
-            logger.info("Exiting...")
-            sys.exit()
-        except Exception as error:
-            logger.error(f"{error}")
+    ser = init_serial_device(dev)
+    loop(commandHandler, ser)
 
 
 if __name__ == "__main__":
