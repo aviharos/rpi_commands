@@ -6,7 +6,8 @@ from Logger import getLogger
 
 logger = getLogger(__name__)
 
-MOMAMS_HOST = os.environ.get("MOMAMS_HOST")
+# MOMAMS and the Orion Context Broker are hosted on the same server
+MOMAMS_HOST = os.environ.get("ORION_HOST")
 if MOMAMS_HOST is None:
     raise ValueError("MOMAMS_HOST environment variable is not set")
 IOTAGENT_HTTP_PORT = os.environ.get("IOTAGENT_HTTP_PORT")
