@@ -196,6 +196,8 @@ def update_attribute(object_id: str, attribute_name: str, attribute_type: str, a
 object_id: {object_id}
 attribute_name: {attribute_name}
 attribute_value: {attribute_value}""")
+    if not exists(object_id=object_id):
+        raise RuntimeError(f"Object {object_id} does not exist")
     url = f"http://{ORION_HOST}:{ORION_PORT}/v2/op/update"
     logger_Orion.debug(f"update_attribute: url: {url}")
     payload = {
