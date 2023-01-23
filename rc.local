@@ -21,7 +21,7 @@ fi
 exec 1>/tmp/rc.local.log 2>&1  # send stdout and stderr from rc.local to a log file
 set -x                        # tell sh to display commands before execution 
 
-export RPI_COMMANDS_CONFIG=/home/pi/Artrade
+export RPI_COMMANDS_CONFIG=/home/pi/rpi_commands_default_config
 export RPI_COMMANDS_SERVICE=/home/pi/rpi_commands
 export MOMAMS_ARDUINO=/dev/ttyUSB0
 
