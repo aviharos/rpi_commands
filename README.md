@@ -173,9 +173,10 @@ Note the last two paths you see. The first is the absolute path of the microserv
 
 The default config will be used with the default environment variables. Note: if you want to test with MOMAMS running on a different host, you need to know the IP address of the MOMAMS host and set it in the config directory's `.env` file (hidden file).
 
-Plug in the Arduino to the computer that will eventually run the microservice. Query for its path:
+Plug in the Arduino to the computer that will eventually run the microservice. You will need its path. This queries often work:
 
     ls /dev/ttyUSB*
+    ls /dev/ttyA*
 
 If you have only one Arduino plugged in, the path you see will most likely be the Arduino. However you can check it with the Arduino IDE. Note: the Arduino IDE and the microservice cannot run simultaneously. Note this path.
 
@@ -195,10 +196,17 @@ From now on, any time the OS reboots, the microservice will start. You can inspe
 Reboot.
 
 ### Start up MOMAMS
+Please follow the the [Try MOMAMS section's instructions](https://github.com/aviharos/momams#try-momams) from subsection "Install curl" to "Notify Cygnus of all context changes". Do not perform any action in Postman.
 
 ### Init objects in MOMAMS
+Change the directory to the configuration repository, then issue the command
+
+    python reupload_jsons_to_Orion.py
+
+You will need the package `requests` installed. You can always reset the json objects that are created from the json folder of the configuration repository and that are stored in the Orion Context Broker by running this command.
 
 ### Use the buttons connected to the Arduino to control the "injection mouldig machine"
+Now you can use the Arduino's buttons to imitate production. You can always query any Orion object to see how objects change according to your button pushes like [this](https://www.tinkercad.com/things/bfzLSh7QfSl-rpi-commands-demo-arduino-setup). When using an actual production machine, you have your machine's signals transformed to 5 V levels using optocouplers instead of the buttons.
 
 ## Testing
 
