@@ -128,15 +128,19 @@ You can get the Arduino's path in various ways, for example using the command be
 You can try MOMAMS as described [here](https://github.com/aviharos/momams#try-momams).
 
 If you want to try MOMAMS with this microservice and an Arduino sensing the events, you will need:
-- a computer running docker on native GNU/Linux
+- a computer running docker on native GNU/Linux (x64) that will be used as the MOMAMS server
+- a Raspberry Pi for running this service (python 3.6+ is required) (you can use any suitable computer, but we will refer to the second one as "Raspberry Pi")
 - an Arduino
 - a breadboard
 - 3 buttons
 - a few wires
 - an USB cable to connect the Arduino with the computer.
 
+### Install MOMAMS on the server
+Please follow the the [Try MOMAMS section's instructions](https://github.com/aviharos/momams#try-momams) from subsection [Install curl](https://github.com/aviharos/momams#install-curl) to [Install Postman](https://github.com/aviharos/momams#install-postman).
+
 ### Create the connections for the Arduino
-You should follow [this](https://docs.arduino.cc/tutorials/generic/digital-input-pullup) setup for pins 2, 3 and 4 using separate buttons. It would be nice to have a toggle for button 2, but it is not needed.
+You should follow [this](https://docs.arduino.cc/tutorials/generic/digital-input-pullup) setup for pins 2, 3 and 4 using separate buttons. You need to connect all buttons in the same way to pins 2-4. It would be nice to have a toggle for button 2, but it is not needed.
 
 Pin layout:
 - pin 2: availability signal:
@@ -155,62 +159,108 @@ The Arduino code is written in a way so that whenever pin 3 has a negative edge,
 When testing, you should press button 2, then make parts using buttons 3 and 4.
 
 ### Load the Arduino code to the Arduino
-The code can be found in the config repository. You can test the way the Arduino works using Arduino IDE.
+The [code](https://github.com/aviharos/rpi_commands_default_config/blob/main/rpi_commands_default_config.ino) can be found in the config repository. You can test the way the Arduino works using Arduino IDE.
 
-### Configure the microservice to start automatically on the Ubuntu machine
-In this example, you will use the same Ubuntu computer for the microservice and as the MOMAMS host. Note: it is assumed that you have already installed MOMAMS on this machine according to its docs.
+### Plug the Arduino into the Raspberry Pi via USB
+The Arduino will get power from the Raspberry Pi and send data through USB.
+
+### Install and configure the microservice to start automatically on the Raspberry Pi
 
 #### Installing the microservice
-Clone repositories. Print their paths
+Install python package requests for HTTP connection, pyserial for USB communication:
+
+    pip install requests pyserial
+
+Clone the repositories. Print their paths:
 
     cd ~
-    git clone https://github.com/aviharos/rpi_commands.git
     git clone https://github.com/aviharos/rpi_commands_default_config.git
-    echo ~/rpi_commands_default_config
-    echo ~/rpi_commands 
+    git clone https://github.com/aviharos/rpi_commands.git
+    echo $(pwd)/rpi_commands_default_config
+    echo $(pwd)/rpi_commands 
 
 Note the last two paths you see. The first is the absolute path of the microservice, the second is the absolute path of the config directory. You will need to specify them as absolute paths later, not relative paths, because `~` means something different for the root user running rc.local.
 
-The default config will be used with the default environment variables. Note: if you want to test with MOMAMS running on a different host, you need to know the IP address of the MOMAMS host and set it in the config directory's `.env` file (hidden file).
+If you are using the default username, the repositories will be located at 
 
-Plug in the Arduino to the computer that will eventually run the microservice. You will need its path. This queries often work:
+    /home/pi/rpi_commands_default_config
+    /home/pi/rpi_commands
+
+The default config will be used with the default environment variables.
+
+#### Set the MOMAMS host's IP address in the Raspberry Pi
+    
+    cd rpi_commands_default_config
+    nano .env
+
+In this .env file, set the ORION_HOST environment variable to the IP address of the MOMAMS server.
+
+
+#### Find the Arduino's path
+Plug in the Arduino to the Raspberry Pi that will eventually run the microservice. You will need its path. These queries often work:
 
     ls /dev/ttyUSB*
     ls /dev/ttyA*
 
-If you have only one Arduino plugged in, the path you see will most likely be the Arduino. However you can check it with the Arduino IDE. Note: the Arduino IDE and the microservice cannot run simultaneously. Note this path.
+If you have only one Arduino plugged in, the path you see will most likely be the Arduino. However you can check its path the Arduino IDE. Note: the Arduino IDE and the microservice cannot run simultaneously. Note this path.
 
+##### Configure auto-start
 Make the microservice auto-start:
 
     sudo cp /etc/rc.local /etc/rc.local.bak 
     sudo cp ~/rpi_commands/rc.local /etc/rc.local 
 
-Specify key environment variables:
+#### Specify key environment variables:
 
     sudo nano /etc/rc.local
 
-Change the config repository's absolute path in the template in line 24, the microservice's absolute path in line 25, the Arduino's path in line 26.
+Write the config repository's absolute path into the template in line 24, the microservice's absolute path in line 25, the Arduino's path in line 26.
 
-From now on, any time the OS reboots, the microservice will start. You can inspect its logs in /tmp/rc.local.log
+From now on, any time the Raspberry Pi reboots, the microservice will start. You can inspect its logs any time:
 
-Reboot.
+    cat /tmp/rc.local.log
 
-### Start up MOMAMS
-Please follow the the [Try MOMAMS section's instructions](https://github.com/aviharos/momams#try-momams) from subsection "Install curl" to "Notify Cygnus of all context changes". Do not perform any action in Postman.
+Now the configuration is complete. You just need to start up the system.
+
+### Start MOMAMS on the server
+Please follow the the [Try MOMAMS section's instructions](https://github.com/aviharos/momams#try-momams) from the subsection [Start MOMAMS](https://github.com/aviharos/momams#start-momams) to [Notify Cygnus of context changes](https://github.com/aviharos/momams#notify-cygnus-of-all-context-changes). Do not perform any action in Postman.
 
 ### Init objects in MOMAMS
-Change the directory to the configuration repository, then issue the command
+The Raspberry Pi - Arduino duo will not create new data objects in MOMAMS under normal operating conditions. For this reason, you need to create the objects yourself at startup so that the Raspberry Pi can modify them.
 
+Since the config directory is already present at the Raspberry Pi, we will use it to create the objects all at once.
+
+Change the directory to the configuration repository (`/path/to/rpi_commands_default_config`), then issue the commands
+
+    cd /path/to/rpi_commands_default_config
+    source set_env.sh
     python reupload_jsons_to_Orion.py
 
-You will need the package `requests` installed. You can always reset the json objects that are created from the json folder of the configuration repository and that are stored in the Orion Context Broker by running this command.
+The last line runs a python script that uploads the default config's data objects to MOMAMS. If those objects already exist, they will be overwritten.
 
-### Use the buttons connected to the Arduino to control the "injection mouldig machine"
+### Start the microservice
+You only need to reboot the Raspberry Pi to start the microservice.
+
+    sudo reboot
+
+### Use the buttons connected to the Arduino to control the "injection moulding machine"
 Now you can use the Arduino's buttons to imitate production. You can always query any Orion object to see how objects change according to your button pushes like [this](https://www.tinkercad.com/things/bfzLSh7QfSl-rpi-commands-demo-arduino-setup). When using an actual production machine, you have your machine's signals transformed to 5 V levels using optocouplers instead of the buttons.
+
+You can query the current state of the `InjectionMouldingMachine1` and the `Job000001` objects and verify that MOMAMS is working, the `goodPartCounter` and `rejectPartCounter` attributes are tracked and the OEE values are calculated:
+
+    curl --location --request GET 'http://localhost:1026/v2/entities/urn:ngsiv2:i40Asset:InjectionMouldingMachine1?options=keyValues' | json_pp
+
+    curl --location --request GET 'http://localhost:1026/v2/entities/urn:ngsiv2:i40Process:Job000001?options=keyValues' | json_pp
+
+The default configuration can be used out-of-the-box with an injection moulding machine with the following pin layout:
+
+- pin 2: injection moulding machine automatic / not automatic
+- pin 3: mould close signal
+- pin 4: reject signal
 
 ## Testing
 
-WARNING: the tests set environment variables, change the Orion Context Broker and PostgreSQL data. Any overwritten data is deleted forever. Proceed at your own risk.
+WARNING: the service's tests set environment variables, change the Orion Context Broker and PostgreSQL data. Any overwritten data is deleted forever. Proceed at your own risk. You can run the [test](test) folder's tests one by one.
 
 ## Limitations
 The service currently cannot handle HTTPS and Fiware’s authentication system.
